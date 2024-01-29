@@ -56,6 +56,8 @@ public class BitbucketJobProbe {
                                 break;
                             } else if ( trigger instanceof BitBucketMultibranchTrigger){
                                 LOGGER.fine("Trigger is BitBucketMultibranchTrigger");
+                            } else if ( trigger instanceof BitBucketComputedFolderTrigger){
+                                LOGGER.fine("Trigger is BitBucketComputedFolderTrigger");
                             }
                         }
                     } else {
@@ -114,7 +116,20 @@ public class BitbucketJobProbe {
                                                 scmSourceOwner.onSCMSourceUpdated(scmSource);
                                             }
                                         }
-                                    } else {
+                                    } else if ( trigger instanceof BitBucketComputedFolderTrigger){
+                                        LOGGER.finest("Found BitBucketComputedFolderTrigger type");
+                                        BitBucketComputedFolderTrigger bitBucketComputedFolderTrigger = (BitBucketComputedFolderTrigger) trigger;
+                                        if ( bitBucketComputedFolderTrigger.getOverrideUrl() == null || bitBucketComputedFolderTrigger.getOverrideUrl().isEmpty()){
+                                            LOGGER.finest("Ignoring empty overrideUrl");
+                                        } else {
+                                            LOGGER.fine("Found override URL [" + bitBucketComputedFolderTrigger.getOverrideUrl() + "]");
+                                            LOGGER.log(Level.FINE, "Trying to match {0} ", remote + "<-->" + bitBucketComputedFolderTrigger.getOverrideUrl());
+                                            if ( bitBucketComputedFolderTrigger.getOverrideUrl().equalsIgnoreCase(remote.toString())) {
+                                                LOGGER.info(String.format("Triggering BitBucket scmSourceOwner [%s] by overrideUrl [%s]",scmSourceOwner.getName(), bitBucketComputedFolderTrigger.getOverrideUrl()));
+                                                scmSourceOwner.onSCMSourceUpdated(scmSource);
+                                            }
+                                        }
+                                    } else{
                                         LOGGER.finest("Found BitBucketMultibranchTrigger type");
                                     }
                                 }));
